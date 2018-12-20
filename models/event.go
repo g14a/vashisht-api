@@ -1,4 +1,4 @@
-package structs
+package models
 
 import (
 	mgo "gopkg.in/mgo.v2"
@@ -23,25 +23,25 @@ var (
 	COLLECTION = "events"
 )
 
-func (e Event) AddEvent(newEvent Event) error {
+func AddEvent(newEvent Event, db *mgo.Database) error {
 	err := db.C(COLLECTION).Insert(&newEvent)
 
 	return err
 }
 
-func (e Event) DeleteEvent(newEvent Event) error {
+func DeleteEvent(newEvent Event, db *mgo.Database) error {
 	err := db.C(COLLECTION).Remove(&newEvent)
 
 	return err
 }
 
-func (e Event) UpdateEvent(updateEvent Event) error {
+func UpdateEvent(updateEvent Event, db *mgo.Database) error {
 	err := db.C(COLLECTION).Update(updateEvent.EventId, &updateEvent)
 
 	return err
 }
 
-func (e Event) FindEventById(id string) (Event, error) {
+func FindEventById(id string, db *mgo.Database) (Event, error) {
 	var event Event
 	err := db.C(COLLECTION).FindId(bson.ObjectIdHex(id)).One(&event)
 
