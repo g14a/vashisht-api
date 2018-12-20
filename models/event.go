@@ -7,7 +7,7 @@ import (
 
 type Event struct {
 	EventName string `json:"name"`
-	EventId   string `json:"id"`
+	EventId   string `bson:"id" json:"id"`
 	Fee       int    `json:"fee"`
 	TeamSize  int    `json:"teamsize"`
 	Category  string `json:"category"`
@@ -43,7 +43,14 @@ func UpdateEvent(updateEvent Event, db *mgo.Database) error {
 
 func FindEventById(id string, db *mgo.Database) (Event, error) {
 	var event Event
-	err := db.C(COLLECTION).FindId(bson.ObjectIdHex(id)).One(&event)
+	err := db.C(COLLECTION).Find(bson.M{"id": id}).One(&event)
 
 	return event, err
+}
+
+func FindAllEvents(db *mgo.Database) ([]Event, error) {
+	var events []Event
+	err := db.C(COLLECTION).Find(bson.M{}).All(&events)
+
+	return events, err
 }

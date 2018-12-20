@@ -1,7 +1,13 @@
 package main
 
 import (
-	"fmt"
+	"encoding/json"
+	"log"
+	"net/http"
+
+	mgo "gopkg.in/mgo.v2"
+
+	"github.com/gorilla/mux"
 
 	"github.com/vashisht-api/db"
 	"github.com/vashisht-api/models"
@@ -12,36 +18,58 @@ var (
 	COLLECTION = "events"
 )
 
-func main() {
+var dbinstance *mgo.Database
 
-	e3 := &models.Event{
-		EventName: "Technical Talk",
-		EventId:   "3",
-		Fee:       100,
-		TeamSize:  0,
-		Category:  "Talk",
-		Day:       3,
-		StartTime: 1000,
-		EndTime:   1200,
-	}
-
-	dbinstance := db.GetDbInstance()
-
-	e3 = &models.Event{
-		EventName: "Technical Talk",
-		EventId:   "3",
-		Fee:       100,
-		TeamSize:  0,
-		Category:  "updated",
-		Day:       3,
-		StartTime: 1000,
-		EndTime:   1200,
-	}
-
-	err := models.UpdateEvent(*e3, dbinstance)
+// Get list of all events
+func GetAllEvents(w http.ResponseWriter, r *http.Request) {
+	events, err := models.FindAllEvents(dbinstance)
 
 	if err != nil {
-		fmt.Println(err)
+		respondWithError(w, http.StatusInternalServerError, err.Error())
+		return
 	}
 
+	respondWithJson(w, http.StatusOK, events)
+}
+
+// Get event by id
+func GetEventById(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+
+	event, err := models.FindEventById(params["id"], dbinstance)
+
+	if err != nil {
+		respondWithError(w, http.StatusBadRequest, "Invalid event id")
+		return
+	}
+
+	respondWithJson(w, http.StatusOK, event)
+}
+
+func respondWithError(w http.ResponseWriter, httpCode int, message string) {
+	respondWithJson(w, httpCode, map[string]string{"error": message})
+}
+
+func respondWithJson(w http.ResponseWriter, httpCode int, payload interface{}) {
+	response, _ := json.Marshal(payload)
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(httpCode)
+	w.Write(response)
+}
+
+func init() {
+	dbinstance = db.GetDbInstance()
+}
+
+func main() {
+
+	r := mux.NewRouter()
+
+	r.HandleFunc("/events", GetAllEvents).Methods("GET")
+	r.HandleFunc("/events/{id}", GetEventById).Methods("GET")
+
+	if err := http.ListenAndServe(":8000", r); err != nil {
+		log.Fatal(err)
+	}
 }
