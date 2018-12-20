@@ -46,6 +46,23 @@ func GetEventById(w http.ResponseWriter, r *http.Request) {
 	respondWithJson(w, http.StatusOK, event)
 }
 
+func AddEvent(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+
+	var event models.Event
+	if err := json.NewDecoder(r.Body).Decode(&event); err != nil {
+		respondWithError(w, http.StatusBadRequest, "Invalid payload")
+		return
+	}
+
+	if err := models.AddEvent(event, dbinstance); err != nil {
+		respondWithError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	respondWithJson(w, http.StatusCreated, event)
+}
+
 func respondWithError(w http.ResponseWriter, httpCode int, message string) {
 	respondWithJson(w, httpCode, map[string]string{"error": message})
 }
@@ -68,6 +85,7 @@ func main() {
 
 	r.HandleFunc("/events", GetAllEvents).Methods("GET")
 	r.HandleFunc("/events/{id}", GetEventById).Methods("GET")
+	r.HandleFunc("/events", AddEvent).Methods("POST")
 
 	if err := http.ListenAndServe(":8000", r); err != nil {
 		log.Fatal(err)

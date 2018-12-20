@@ -1,13 +1,17 @@
 package models
 
 import (
+	"log"
+	"sync"
+
+	"github.com/vashisht-api/db"
 	mgo "gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )
 
 type Event struct {
 	EventName string `json:"name"`
-	EventId   string `bson:"id" json:"id"`
+	EventId   int    `bson:"id" json:"id"`
 	Fee       int    `json:"fee"`
 	TeamSize  int    `json:"teamsize"`
 	Category  string `json:"category"`
@@ -16,14 +20,43 @@ type Event struct {
 	EndTime   int    `json:"end"`
 }
 
-var db *mgo.Database
+var dbinstance *mgo.Database
 
 var (
 	DATABASE   = "vashisht"
 	COLLECTION = "events"
+	mu         sync.Mutex
+	size       int
+	err        error
 )
 
+func init() {
+
+	dbinstance = db.GetDbInstance()
+
+	size, err = dbinstance.C(COLLECTION).Count()
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func incrementSize() {
+	mu.Lock()
+	size++
+	mu.Unlock()
+}
+
+func decrementSize() {
+	mu.Lock()
+	size--
+	mu.Unlock()
+}
+
 func AddEvent(newEvent Event, db *mgo.Database) error {
+
+	incrementSize()
+	newEvent.EventId = size
+
 	err := db.C(COLLECTION).Insert(&newEvent)
 
 	return err
@@ -32,6 +65,7 @@ func AddEvent(newEvent Event, db *mgo.Database) error {
 func DeleteEvent(newEvent Event, db *mgo.Database) error {
 	err := db.C(COLLECTION).Remove(&newEvent)
 
+	decrementSize()
 	return err
 }
 
