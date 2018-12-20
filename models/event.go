@@ -1,6 +1,7 @@
 package models
 
 import (
+	"fmt"
 	"log"
 	"sync"
 
@@ -35,6 +36,7 @@ func init() {
 	dbinstance = db.GetDbInstance()
 
 	size, err = dbinstance.C(COLLECTION).Count()
+
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -52,7 +54,7 @@ func decrementSize() {
 	mu.Unlock()
 }
 
-func AddEvent(newEvent Event, db *mgo.Database) error {
+func AddEvent(newEvent *Event, db *mgo.Database) error {
 
 	incrementSize()
 	newEvent.EventId = size
@@ -62,15 +64,18 @@ func AddEvent(newEvent Event, db *mgo.Database) error {
 	return err
 }
 
-func DeleteEvent(newEvent Event, db *mgo.Database) error {
-	err := db.C(COLLECTION).Remove(&newEvent)
+func DeleteEvent(eventID int, db *mgo.Database) error {
+	err := db.C(COLLECTION).Remove(bson.M{"id": eventID})
 
 	decrementSize()
+
 	return err
 }
 
-func UpdateEvent(updateEvent Event, db *mgo.Database) error {
-	err := db.C(COLLECTION).Update(updateEvent.EventId, &updateEvent)
+func UpdateEvent(updateEvent *Event, db *mgo.Database) error {
+	fmt.Println(updateEvent.EventId)
+
+	err := db.C(COLLECTION).Update(bson.M{"id": updateEvent.EventId}, &updateEvent)
 
 	return err
 }
