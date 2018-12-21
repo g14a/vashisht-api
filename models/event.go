@@ -24,9 +24,9 @@ type Event struct {
 var dbinstance *mgo.Database
 
 var (
-	DATABASE   = "vashisht"
-	COLLECTION = "events"
-	mu         sync.Mutex
+	database   = "vashisht"
+	collection = "events"
+	eventsMu   sync.Mutex
 	size       int
 	err        error
 )
@@ -35,7 +35,7 @@ func init() {
 
 	dbinstance = db.GetDbInstance()
 
-	size, err = dbinstance.C(COLLECTION).Count()
+	size, err = dbinstance.C(collection).Count()
 
 	if err != nil {
 		log.Fatal(err)
@@ -43,53 +43,53 @@ func init() {
 }
 
 func incrementSize() {
-	mu.Lock()
+	eventsMu.Lock()
 	size++
-	mu.Unlock()
+	eventsMu.Unlock()
 }
 
 func decrementSize() {
-	mu.Lock()
+	eventsMu.Lock()
 	size--
-	mu.Unlock()
+	eventsMu.Unlock()
 }
 
-func AddEvent(newEvent *Event, db *mgo.Database) error {
+func AddEvent(newEvent *Event) error {
 
 	incrementSize()
 	newEvent.EventId = size
 
-	err := db.C(COLLECTION).Insert(&newEvent)
+	err := dbinstance.C(collection).Insert(&newEvent)
 
 	return err
 }
 
-func DeleteEvent(eventID int, db *mgo.Database) error {
-	err := db.C(COLLECTION).Remove(bson.M{"id": eventID})
+func DeleteEvent(eventID int) error {
+	err := dbinstance.C(collection).Remove(bson.M{"id": eventID})
 
 	decrementSize()
 
 	return err
 }
 
-func UpdateEvent(updateEvent *Event, db *mgo.Database) error {
+func UpdateEvent(updateEvent *Event) error {
 	fmt.Println(updateEvent.EventId)
 
-	err := db.C(COLLECTION).Update(bson.M{"id": updateEvent.EventId}, &updateEvent)
+	err := dbinstance.C(collection).Update(bson.M{"id": updateEvent.EventId}, &updateEvent)
 
 	return err
 }
 
-func FindEventById(id string, db *mgo.Database) (Event, error) {
+func FindEventById(id string) (Event, error) {
 	var event Event
-	err := db.C(COLLECTION).Find(bson.M{"id": id}).One(&event)
+	err := dbinstance.C(collection).Find(bson.M{"id": id}).One(&event)
 
 	return event, err
 }
 
-func FindAllEvents(db *mgo.Database) ([]Event, error) {
+func FindAllEvents() ([]Event, error) {
 	var events []Event
-	err := db.C(COLLECTION).Find(bson.M{}).All(&events)
+	err := dbinstance.C(collection).Find(bson.M{}).All(&events)
 
 	return events, err
 }
