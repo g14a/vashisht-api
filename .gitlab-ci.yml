@@ -18,7 +18,7 @@ stages:
 buildLinux:
     stage: build
     script:
-     - GOOS=linux go build -race -ldflags "-extldflags '-static'" -o $CI_PROJECT_DIR/vashisht-api-linux
+     - GOOS=linux go build -o $CI_PROJECT_DIR/vashisht-api-linux
     artifacts:
       paths:
         - vashisht-api-linux 
@@ -26,7 +26,7 @@ buildLinux:
 buildWin:
     stage: build
     script:
-     - GOOS=windows go build -race -ldflags "-extldflags '-static'" -o $CI_PROJECT_DIR/vashisht-api-win.exe
+     - GOOS=windows go build -o $CI_PROJECT_DIR/vashisht-api-win.exe
     artifacts:
       paths:
         - vashisht-api-win.exe
@@ -34,7 +34,7 @@ buildWin:
 buildDarwin:
     stage: build
     script:
-     - GOOS=darwin go build -race -ldflags "-extldflags '-static'" -o $CI_PROJECT_DIR/vashisht-api-darwin
+     - GOOS=darwin go build -o $CI_PROJECT_DIR/vashisht-api-darwin
     artifacts:
       paths:
         - vashisht-api-darwin 
