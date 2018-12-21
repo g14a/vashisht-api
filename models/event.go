@@ -5,7 +5,7 @@ import (
 	"log"
 	"sync"
 
-	"github.com/vashisht-api/db"
+	"gitlab.com/gowtham-munukutla/vashisht-api/db"
 	mgo "gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )

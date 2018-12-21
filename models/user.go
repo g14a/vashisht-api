@@ -7,7 +7,7 @@ import (
 
 	"gopkg.in/mgo.v2/bson"
 
-	"github.com/vashisht-api/db"
+	"gitlab.com/gowtham-munukutla/vashisht-api/db"
 )
 
 // User is the structure of how a User looks

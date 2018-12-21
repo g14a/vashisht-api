@@ -4,7 +4,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/vashisht-api/routes"
+	"gitlab.com/gowtham-munukutla/vashisht-api/routes"
 
 	"github.com/gorilla/mux"
 )

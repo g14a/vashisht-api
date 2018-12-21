@@ -6,9 +6,8 @@ import (
 	"strconv"
 
 	"github.com/gorilla/mux"
-	"github.com/vashisht-api/db"
-	"github.com/vashisht-api/models"
-	"golang.org/x/crypto/bcrypt"
+	"gitlab.com/gowtham-munukutla/vashisht-api/db"
+	"gitlab.com/gowtham-munukutla/vashisht-api/models"
 	mgo "gopkg.in/mgo.v2"
 )
 
@@ -107,10 +106,6 @@ func AddUser(w http.ResponseWriter, r *http.Request) {
 		respondWithError(w, http.StatusBadRequest, "Invalid payload")
 		return
 	}
-
-	// encrypting the password and sending it to the db
-	bytes, _ := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
-	user.Password = string(bytes)
 
 	if err := models.AddUser(&user); err != nil {
 		respondWithError(w, http.StatusInternalServerError, err.Error())

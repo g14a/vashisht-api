@@ -1,7 +1,6 @@
-module vashisht-api
+module gitlab.com/gowtham-munukutla/vashisht-api
 
 require (
-    gopkg.in/mgo.v2 v2.0.0-20180705113604-9856a29383ce
-    github.com/gorilla/mux@latest
-    golang.org/x/crypto/bcrypt@latest
+	github.com/gorilla/mux v1.6.2
+	gopkg.in/mgo.v2 v2.0.0-20180705113604-9856a29383ce
 )
