@@ -2,12 +2,14 @@ package routes
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
 
 	"github.com/gorilla/mux"
 	"github.com/vashisht-api/db"
 	"github.com/vashisht-api/models"
+	"golang.org/x/crypto/bcrypt"
 	mgo "gopkg.in/mgo.v2"
 )
 
@@ -98,11 +100,21 @@ func DeleteEvent(w http.ResponseWriter, r *http.Request) {
 func AddUser(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
+	// take out the password and encrypt it
+	params := mux.Vars(r)
+	password := params["pwd"]
+
+	bytes, _ := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+
 	var user models.User
+	user.Password = string(bytes)
+
 	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
 		respondWithError(w, http.StatusBadRequest, "Invalid payload")
 		return
 	}
+
+	fmt.Println(user)
 
 	if err := models.AddUser(&user); err != nil {
 		respondWithError(w, http.StatusInternalServerError, err.Error())
