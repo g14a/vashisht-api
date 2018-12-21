@@ -100,21 +100,22 @@ func DeleteEvent(w http.ResponseWriter, r *http.Request) {
 func AddUser(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
-	// take out the password and encrypt it
-	params := mux.Vars(r)
-	password := params["pwd"]
-
-	bytes, _ := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
-
 	var user models.User
+
+	err := json.NewDecoder(r.Body).Decode(&user)
+
+	bytes, _ := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
+
+	fmt.Println(user.Password)
+
 	user.Password = string(bytes)
 
-	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
+	fmt.Println(user.Password)
+	
+	if err != nil {
 		respondWithError(w, http.StatusBadRequest, "Invalid payload")
 		return
 	}
-
-	fmt.Println(user)
 
 	if err := models.AddUser(&user); err != nil {
 		respondWithError(w, http.StatusInternalServerError, err.Error())
