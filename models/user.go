@@ -10,6 +10,7 @@ import (
 	"github.com/vashisht-api/db"
 )
 
+// User is the structure of how a User looks
 type User struct {
 	Name         string `bson:"name" json:"name"`
 	Password     string `bson:"pwd" json:"pwd"`
@@ -48,6 +49,7 @@ func decrementUserID() {
 	usersMu.Unlock()
 }
 
+// AddUser adds a new user after registration into the db
 func AddUser(u *User) error {
 	incrementUserID()
 	u.UserID = userID
@@ -63,6 +65,16 @@ func AddUser(u *User) error {
 	return err
 }
 
+// GetAllUsers returns all the users registered for the fest
+func GetAllUsers() ([]User, error) {
+	var users []User
+
+	err := dbinstance.C(userCollection).Find(bson.M{}).All(&users)
+
+	return users, err
+}
+
+// CheckUserHash checks if the given combination of email and password exists in the db
 func CheckUserHash(email, password string) (bool, error) {
 	count, err := dbinstance.C(userCollection).Find(bson.M{"email": email, "pwd": password}).Count()
 

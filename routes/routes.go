@@ -11,13 +11,14 @@ import (
 	mgo "gopkg.in/mgo.v2"
 )
 
+// This is the db of the fest
 var (
 	DATABASE = "vashisht"
 )
 
 var dbinstance *mgo.Database
 
-// Get list of all events
+// GetAllEvents returns all the events in the db. Refer to models package for more info
 func GetAllEvents(w http.ResponseWriter, r *http.Request) {
 	events, err := models.FindAllEvents()
 
@@ -26,24 +27,24 @@ func GetAllEvents(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	respondWithJson(w, http.StatusOK, events)
+	respondWithJSON(w, http.StatusOK, events)
 }
 
-// Get event by id
-func GetEventById(w http.ResponseWriter, r *http.Request) {
+// GetEventByID returns an event by id
+func GetEventByID(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 
-	event, err := models.FindEventById(params["id"])
+	event, err := models.FindEventByID(params["id"])
 
 	if err != nil {
 		respondWithError(w, http.StatusBadRequest, "Invalid event id")
 		return
 	}
 
-	respondWithJson(w, http.StatusOK, event)
+	respondWithJSON(w, http.StatusOK, event)
 }
 
-// Add a new event
+// AddEvent adds a new event to the db
 func AddEvent(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
@@ -58,10 +59,10 @@ func AddEvent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	respondWithJson(w, http.StatusCreated, event)
+	respondWithJSON(w, http.StatusCreated, event)
 }
 
-// Update an existing event
+// UpdateEvent updates an event through PUT
 func UpdateEvent(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
@@ -76,10 +77,10 @@ func UpdateEvent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	respondWithJson(w, http.StatusCreated, map[string]string{"result": "success"})
+	respondWithJSON(w, http.StatusCreated, map[string]string{"result": "success"})
 }
 
-// Delete an event
+// DeleteEvent deletes an event from the db
 func DeleteEvent(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 
@@ -90,9 +91,10 @@ func DeleteEvent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	respondWithJson(w, http.StatusCreated, map[string]string{"result": "success"})
+	respondWithJSON(w, http.StatusCreated, map[string]string{"result": "success"})
 }
 
+// AddUser adds a new user
 func AddUser(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
@@ -107,14 +109,28 @@ func AddUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	respondWithJson(w, http.StatusCreated, user)
+	respondWithJSON(w, http.StatusCreated, user)
+}
+
+// GetAllUsers returns all the users registered for the fest
+func GetAllUsers(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+
+	users, err := models.GetAllUsers()
+
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	respondWithJSON(w, http.StatusOK, users)
 }
 
 func respondWithError(w http.ResponseWriter, httpCode int, message string) {
-	respondWithJson(w, httpCode, map[string]string{"error": message})
+	respondWithJSON(w, httpCode, map[string]string{"error": message})
 }
 
-func respondWithJson(w http.ResponseWriter, httpCode int, payload interface{}) {
+func respondWithJSON(w http.ResponseWriter, httpCode int, payload interface{}) {
 	response, _ := json.Marshal(payload)
 
 	w.Header().Set("Content-Type", "application/json")
@@ -126,10 +142,15 @@ func init() {
 	dbinstance = db.GetDbInstance()
 }
 
+// InitRoutes initializes all the http routes ...
 func InitRoutes(r *mux.Router) {
 	r.HandleFunc("/events", GetAllEvents).Methods("GET")
-	r.HandleFunc("/events/{id}", GetEventById).Methods("GET")
+	r.HandleFunc("/events/{id}", GetEventByID).Methods("GET")
 	r.HandleFunc("/events", AddEvent).Methods("POST")
 	r.HandleFunc("/events", UpdateEvent).Methods("PUT")
 	r.HandleFunc("/events/{id}", DeleteEvent).Methods("DELETE")
+
+	// User routes
+	r.HandleFunc("/users", AddUser).Methods("POST")
+	r.HandleFunc("/users", GetAllUsers).Methods("GET")
 }

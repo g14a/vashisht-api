@@ -54,6 +54,7 @@ func decrementSize() {
 	eventsMu.Unlock()
 }
 
+// AddEvent adds a new event into the db
 func AddEvent(newEvent *Event) error {
 
 	incrementSize()
@@ -64,6 +65,7 @@ func AddEvent(newEvent *Event) error {
 	return err
 }
 
+// DeleteEvent deletes an events from the db
 func DeleteEvent(eventID int) error {
 	err := dbinstance.C(collection).Remove(bson.M{"id": eventID})
 
@@ -72,6 +74,7 @@ func DeleteEvent(eventID int) error {
 	return err
 }
 
+// UpdateEvent updates an event in the db
 func UpdateEvent(updateEvent *Event) error {
 	fmt.Println(updateEvent.EventId)
 
@@ -80,13 +83,15 @@ func UpdateEvent(updateEvent *Event) error {
 	return err
 }
 
-func FindEventById(id string) (Event, error) {
+// FindEventByID finds an event given its id
+func FindEventByID(id string) (Event, error) {
 	var event Event
 	err := dbinstance.C(collection).Find(bson.M{"id": id}).One(&event)
 
 	return event, err
 }
 
+// FindAllEvents returns all events in the fest db
 func FindAllEvents() ([]Event, error) {
 	var events []Event
 	err := dbinstance.C(collection).Find(bson.M{}).All(&events)
