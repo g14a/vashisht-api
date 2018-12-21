@@ -2,7 +2,6 @@ package routes
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"strconv"
 
@@ -104,18 +103,14 @@ func AddUser(w http.ResponseWriter, r *http.Request) {
 
 	err := json.NewDecoder(r.Body).Decode(&user)
 
-	bytes, _ := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
-
-	fmt.Println(user.Password)
-
-	user.Password = string(bytes)
-
-	fmt.Println(user.Password)
-	
 	if err != nil {
 		respondWithError(w, http.StatusBadRequest, "Invalid payload")
 		return
 	}
+
+	// encrypting the password and sending it to the db
+	bytes, _ := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
+	user.Password = string(bytes)
 
 	if err := models.AddUser(&user); err != nil {
 		respondWithError(w, http.StatusInternalServerError, err.Error())
