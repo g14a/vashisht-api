@@ -21,7 +21,7 @@ buildLinux:
      - GOOS=linux go build -o $CI_PROJECT_DIR/vashisht-api-linux
     artifacts:
       paths:
-        - vashisht-api-linux 
+        - vashisht-api-linux      
 
 buildWin:
     stage: build
