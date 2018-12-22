@@ -2,8 +2,12 @@ package routes
 
 import (
 	"encoding/json"
+	"fmt"
+	"log"
 	"net/http"
 	"strconv"
+
+	uuid "github.com/satori/go.uuid"
 
 	"github.com/gorilla/mux"
 	"gitlab.com/gowtham-munukutla/vashisht-api/db"
@@ -34,7 +38,9 @@ func GetAllEvents(w http.ResponseWriter, r *http.Request) {
 func GetEventByID(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 
-	event, err := models.FindEventByID(params["id"])
+	id, _ := strconv.Atoi(params["id"])
+
+	event, err := models.FindEventByID(id)
 
 	if err != nil {
 		respondWithError(w, http.StatusBadRequest, "Invalid event id")
@@ -129,6 +135,38 @@ func GetAllUsers(w http.ResponseWriter, r *http.Request) {
 	respondWithJSON(w, http.StatusOK, users)
 }
 
+// AddRegistration adds a registration
+func AddRegistration(w http.ResponseWriter, r *http.Request) {
+	var registration models.Registration
+
+	params := mux.Vars(r)
+	userID := params["userid"]
+	eventID := params["eventid"]
+
+	userIDInt, err := strconv.Atoi(userID)
+	if err != nil {
+		log.Println(err.Error())
+	}
+
+	eventIDInt, err := strconv.Atoi(eventID)
+	if err != nil {
+		log.Println(err.Error())
+	}
+
+	registration.EventID = eventIDInt
+	registration.UserID = userIDInt
+	registration.RegID = uuid.NewV4().String()
+
+	fmt.Println(registration)
+
+	if err := models.AddRegistration(&registration); err != nil {
+		respondWithError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	respondWithJSON(w, http.StatusCreated, registration)
+}
+
 func respondWithError(w http.ResponseWriter, httpCode int, message string) {
 	respondWithJSON(w, httpCode, map[string]string{"error": message})
 }
@@ -147,6 +185,7 @@ func init() {
 
 // InitRoutes initializes all the http routes ...
 func InitRoutes(r *mux.Router) {
+
 	r.HandleFunc("/events", GetAllEvents).Methods("GET")
 	r.HandleFunc("/events/{id}", GetEventByID).Methods("GET")
 	r.HandleFunc("/events", AddEvent).Methods("POST")
@@ -154,6 +193,8 @@ func InitRoutes(r *mux.Router) {
 	r.HandleFunc("/events/{id}", DeleteEvent).Methods("DELETE")
 
 	// User routes
+
 	r.HandleFunc("/users", AddUser).Methods("POST")
 	r.HandleFunc("/users", GetAllUsers).Methods("GET")
+	r.HandleFunc("/users/{userid}/events/{eventid}/register", AddRegistration).Methods("POST")
 }

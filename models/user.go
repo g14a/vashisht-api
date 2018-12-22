@@ -2,12 +2,9 @@ package models
 
 import (
 	"errors"
-	"log"
 	"sync"
 
 	"gopkg.in/mgo.v2/bson"
-
-	"gitlab.com/gowtham-munukutla/vashisht-api/db"
 )
 
 // User is the structure of how a User looks
@@ -25,17 +22,6 @@ var (
 	userID         int
 	usersMu        sync.Mutex
 )
-
-func init() {
-
-	dbinstance = db.GetDbInstance()
-
-	size, err = dbinstance.C(userCollection).Count()
-
-	if err != nil {
-		log.Fatal(err)
-	}
-}
 
 func incrementUserID() {
 	usersMu.Lock()

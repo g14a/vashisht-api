@@ -1,7 +1,6 @@
 package models
 
 import (
-	"fmt"
 	"log"
 	"sync"
 
@@ -12,7 +11,7 @@ import (
 
 type Event struct {
 	EventName string `json:"name"`
-	EventId   int    `bson:"id" json:"id"`
+	EventID   int    `bson:"id" json:"id"`
 	Fee       int    `json:"fee"`
 	TeamSize  int    `json:"teamsize"`
 	Category  string `json:"category"`
@@ -58,7 +57,7 @@ func decrementSize() {
 func AddEvent(newEvent *Event) error {
 
 	incrementSize()
-	newEvent.EventId = size
+	newEvent.EventID = size
 
 	err := dbinstance.C(collection).Insert(&newEvent)
 
@@ -76,15 +75,14 @@ func DeleteEvent(eventID int) error {
 
 // UpdateEvent updates an event in the db
 func UpdateEvent(updateEvent *Event) error {
-	fmt.Println(updateEvent.EventId)
 
-	err := dbinstance.C(collection).Update(bson.M{"id": updateEvent.EventId}, &updateEvent)
+	err := dbinstance.C(collection).Update(bson.M{"id": updateEvent.EventID}, &updateEvent)
 
 	return err
 }
 
 // FindEventByID finds an event given its id
-func FindEventByID(id string) (Event, error) {
+func FindEventByID(id int) (Event, error) {
 	var event Event
 	err := dbinstance.C(collection).Find(bson.M{"id": id}).One(&event)
 
