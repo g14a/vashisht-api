@@ -2,6 +2,7 @@ package models
 
 import (
 	"errors"
+	"log"
 	"sync"
 
 	"gopkg.in/mgo.v2/bson"
@@ -58,6 +59,14 @@ func GetAllUsers() ([]User, error) {
 	err := dbinstance.C(userCollection).Find(bson.M{}).All(&users)
 
 	return users, err
+}
+
+func GetUserByID(userID int) (User, error) {
+	var user User
+	log.Println(userID)
+	err := dbinstance.C(userCollection).Find(bson.M{"userid": userID}).One(&user)
+
+	return user, err
 }
 
 // CheckUserHash checks if the given combination of email and password exists in the db

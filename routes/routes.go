@@ -2,7 +2,6 @@ package routes
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -13,11 +12,6 @@ import (
 	"gitlab.com/gowtham-munukutla/vashisht-api/db"
 	"gitlab.com/gowtham-munukutla/vashisht-api/models"
 	mgo "gopkg.in/mgo.v2"
-)
-
-// This is the db of the fest
-var (
-	DATABASE = "vashisht"
 )
 
 var dbinstance *mgo.Database
@@ -157,14 +151,45 @@ func AddRegistration(w http.ResponseWriter, r *http.Request) {
 	registration.UserID = userIDInt
 	registration.RegID = uuid.NewV4().String()
 
-	fmt.Println(registration)
-
 	if err := models.AddRegistration(&registration); err != nil {
 		respondWithError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
 	respondWithJSON(w, http.StatusCreated, registration)
+}
+
+// GetEventsOfUsers gets all the events of the users
+func GetEventsOfUsers(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+
+	params := mux.Vars(r)
+	userID, _ := strconv.Atoi(params["userid"])
+
+	events, err := models.GetEventsOfUser(userID)
+
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	respondWithJSON(w, http.StatusOK, &events)
+}
+
+// GetUsersForEvent returns all users for an event
+func GetUsersForEvent(w http.ResponseWriter, r *http.Request) {
+
+	params := mux.Vars(r)
+	eventID, _ := strconv.Atoi(params["eventid"])
+
+	users, err := models.GetUsersForEvent(eventID)
+
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	respondWithJSON(w, http.StatusOK, &users)
 }
 
 func respondWithError(w http.ResponseWriter, httpCode int, message string) {
@@ -191,10 +216,11 @@ func InitRoutes(r *mux.Router) {
 	r.HandleFunc("/events", AddEvent).Methods("POST")
 	r.HandleFunc("/events", UpdateEvent).Methods("PUT")
 	r.HandleFunc("/events/{id}", DeleteEvent).Methods("DELETE")
-
+	r.HandleFunc("/events/{eventid}/users", GetUsersForEvent).Methods("GET")
 	// User routes
 
 	r.HandleFunc("/users", AddUser).Methods("POST")
 	r.HandleFunc("/users", GetAllUsers).Methods("GET")
+	r.HandleFunc("/users/{userid}/events", GetEventsOfUsers).Methods("GET")
 	r.HandleFunc("/users/{userid}/events/{eventid}/register", AddRegistration).Methods("POST")
 }

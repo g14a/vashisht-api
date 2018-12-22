@@ -1,0 +1,8 @@
+mongo:
+  host: localhost
+  port: 27017
+  database: vashisht
+  collections:
+    users: users
+    events: events
+    registrations: eventreg

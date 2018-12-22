@@ -1,8 +1,11 @@
 package db
 
 import (
+	"fmt"
 	"log"
 	"sync"
+
+	"gitlab.com/gowtham-munukutla/vashisht-api/config"
 
 	mgo "gopkg.in/mgo.v2"
 )
@@ -10,7 +13,6 @@ import (
 var (
 	dbInstance *mgo.Database
 	once       sync.Once
-	dbname     = "vashisht"
 )
 
 func GetDbInstance() *mgo.Database {
@@ -22,11 +24,14 @@ func GetDbInstance() *mgo.Database {
 }
 
 func connectDB() {
-	session, err := mgo.Dial("localhost:27017")
+	config := config.GetAppConfig()
+	mongoConfig := config.MongoConfig
+
+	session, err := mgo.Dial(fmt.Sprintf("%s:%d", mongoConfig.Host, mongoConfig.Port))
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	dbInstance = session.DB(dbname)
+	dbInstance = session.DB(mongoConfig.Database)
 }
