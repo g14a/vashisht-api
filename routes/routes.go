@@ -8,11 +8,11 @@ import (
 
 	uuid "github.com/satori/go.uuid"
 
+	mgo "github.com/globalsign/mgo"
+	"github.com/globalsign/mgo/bson"
 	"github.com/gorilla/mux"
 	"gitlab.com/gowtham-munukutla/vashisht-api/db"
 	"gitlab.com/gowtham-munukutla/vashisht-api/models"
-	mgo "gopkg.in/mgo.v2"
-	"gopkg.in/mgo.v2/bson"
 )
 
 var dbinstance *mgo.Database

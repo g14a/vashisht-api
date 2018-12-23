@@ -7,8 +7,8 @@ import (
 	"gitlab.com/gowtham-munukutla/vashisht-api/config"
 
 	"gitlab.com/gowtham-munukutla/vashisht-api/db"
-	mgo "gopkg.in/mgo.v2"
-	"gopkg.in/mgo.v2/bson"
+	mgo "github.com/globalsign/mgo"
+	"github.com/globalsign/mgo/bson"
 )
 
 type Event struct {

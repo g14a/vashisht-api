@@ -1,8 +1,12 @@
 mongo:
-  host: localhost
-  port: 27017
+  hosts:
+    - munukutla-mongo-cluster-shard-00-00-kt0qc.mongodb.net:27017
+    - munukutla-mongo-cluster-shard-00-01-kt0qc.mongodb.net:27017
+    - munukutla-mongo-cluster-shard-00-02-kt0qc.mongodb.net:27017
+  user: mongoadmin
+  password: fofx
   database: vashisht
   collections:
     users: users
     events: events
-    registrations: eventreg
+    registrations: eventsreg

@@ -7,8 +7,9 @@ type AppConfig struct {
 
 // MongoConfig reads the credentials of mongodb
 type MongoConfig struct {
-	Host        string                 `yaml:"host"`
-	Port        int                    `yaml:"port"`
+	Hosts       []string               `yaml:"hosts"`
+	Username    string                 `yaml:"username"`
+	Password    string                 `yaml:"password"`
 	Database    string                 `yaml:"database"`
 	Collections *MongoCollectionConfig `yaml:"collections"`
 }

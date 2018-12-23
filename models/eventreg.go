@@ -6,7 +6,7 @@ import (
 
 	"gitlab.com/gowtham-munukutla/vashisht-api/config"
 
-	"gopkg.in/mgo.v2/bson"
+	"github.com/globalsign/mgo/bson"
 )
 
 // Registration contains the record of user registered for a particular event
