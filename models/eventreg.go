@@ -45,6 +45,7 @@ func GetEventsOfUser(userID int) ([]Event, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	for cursor.Next(ctx) {
 		var registration Registration
 		if err := cursor.Decode(&registration); err != nil {

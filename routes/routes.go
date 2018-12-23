@@ -154,6 +154,36 @@ func AddRegistration(w http.ResponseWriter, r *http.Request) {
 	respondWithJSON(w, http.StatusCreated, registration)
 }
 
+// CancelRegistration cancels a registration whenever a user wants to cancel it
+func CancelRegistration(w http.ResponseWriter, r *http.Request) {
+	var registration models.Registration
+
+	params := mux.Vars(r)
+
+	userID := params["userid"]
+	eventID := params["eventid"]
+
+	userIDInt, err := strconv.Atoi(userID)
+	if err != nil {
+		log.Println(err.Error())
+	}
+
+	eventIDInt, err := strconv.Atoi(eventID)
+	if err != nil {
+		log.Println(err.Error())
+	}
+
+	registration.EventID = eventIDInt
+	registration.UserID = userIDInt
+	if err := models.CancelRegistration(registration); err != nil {
+		respondWithError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	respondWithJSON(w, http.StatusCreated, map[string]string{"result": "Deleted successfully"})
+
+}
+
 // GetEventsOfUsers gets all the events of the users
 func GetEventsOfUsers(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
@@ -248,6 +278,7 @@ func InitRoutes(r *mux.Router) {
 	r.HandleFunc("/users", GetAllUsers).Methods("GET")
 	r.HandleFunc("/users/{userid}/events", GetEventsOfUsers).Methods("GET")
 	r.HandleFunc("/users/{userid}/events/{eventid}/register", AddRegistration).Methods("POST")
+	r.HandleFunc("/users/{userid}/events/{eventid}/cancel", CancelRegistration).Methods("DELETE")
 	r.HandleFunc("/users/{userid}/events/{eventid}/check", CheckIfUserRegisteredForEvent).Methods("GET")
 	r.HandleFunc("/users/{mongoid}/events/{eventid}/checkMongoID", CheckIfUserRegisteredForEventByMongoID).Methods("GET")
 
