@@ -6,16 +6,10 @@ import (
 	"net/http"
 	"strconv"
 
-	uuid "github.com/satori/go.uuid"
-
-	mgo "github.com/globalsign/mgo"
-	"github.com/globalsign/mgo/bson"
 	"github.com/gorilla/mux"
-	"gitlab.com/gowtham-munukutla/vashisht-api/db"
+	uuid "github.com/satori/go.uuid"
 	"gitlab.com/gowtham-munukutla/vashisht-api/models"
 )
-
-var dbinstance *mgo.Database
 
 // GetAllEvents returns all the events in the db. Refer to models package for more info
 func GetAllEvents(w http.ResponseWriter, r *http.Request) {
@@ -217,9 +211,7 @@ func CheckIfUserRegisteredForEventByMongoID(w http.ResponseWriter, r *http.Reque
 	mongoIDStr := params["mongoid"]
 	eventID, _ := strconv.Atoi(params["eventid"])
 
-	mongoID := bson.ObjectIdHex(mongoIDStr)
-
-	ok, err := models.CheckIfUserRegisteredForEventByMongoID(mongoID, eventID)
+	ok, err := models.CheckIfUserRegisteredForEventByMongoID(mongoIDStr, eventID)
 
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, err.Error())
@@ -241,10 +233,6 @@ func respondWithJSON(w http.ResponseWriter, httpCode int, payload interface{}) {
 	w.Write(response)
 }
 
-func init() {
-	dbinstance = db.GetDbInstance()
-}
-
 // InitRoutes initializes all the http routes ...
 func InitRoutes(r *mux.Router) {
 
@@ -254,8 +242,8 @@ func InitRoutes(r *mux.Router) {
 	r.HandleFunc("/events", UpdateEvent).Methods("PUT")
 	r.HandleFunc("/events/{id}", DeleteEvent).Methods("DELETE")
 	r.HandleFunc("/events/{eventid}/users", GetUsersForEvent).Methods("GET")
-	// User routes
 
+	// User routes
 	r.HandleFunc("/users", AddUser).Methods("POST")
 	r.HandleFunc("/users", GetAllUsers).Methods("GET")
 	r.HandleFunc("/users/{userid}/events", GetEventsOfUsers).Methods("GET")

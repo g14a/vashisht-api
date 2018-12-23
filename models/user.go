@@ -1,13 +1,11 @@
 package models
 
 import (
-	"errors"
-	"log"
 	"sync"
 
+	"github.com/mongodb/mongo-go-driver/bson"
 	"gitlab.com/gowtham-munukutla/vashisht-api/config"
-
-	"github.com/globalsign/mgo/bson"
+	"gitlab.com/gowtham-munukutla/vashisht-api/db"
 )
 
 // User is the structure of how a User looks
@@ -21,74 +19,54 @@ type User struct {
 }
 
 var (
-	userCollection = config.GetAppConfig().MongoConfig.Collections.UserCollectionName
-	userID         int
-	usersMu        sync.Mutex
+	usersCollection = config.GetAppConfig().MongoConfig.Collections.UserCollectionName
+	usersMutex      = &sync.Mutex{}
 )
-
-func incrementUserID() {
-	usersMu.Lock()
-	userID++
-	usersMu.Unlock()
-}
-
-func decrementUserID() {
-	usersMu.Lock()
-	userID--
-	usersMu.Unlock()
-}
 
 // AddUser adds a new user after registration into the db
 func AddUser(u *User) error {
-	incrementUserID()
-	u.UserID = userID
-
-	count, err := dbinstance.C(userCollection).Find(bson.M{"email": u.EmailAddress}).Count()
-
-	if count > 0 {
-		return errors.New("User already exists, try logging in")
-	}
-
-	err = dbinstance.C(userCollection).Insert(&u)
-
+	usersCollection, ctx := db.GetMongoCollectionWithContext(usersCollection)
+	count, err := usersCollection.CountDocuments(ctx, bson.M{})
+	eventsMutex.Lock()
+	count = count + 1
+	u.UserID = int(count)
+	eventsMutex.Unlock()
+	_, err = usersCollection.InsertOne(ctx, u)
 	return err
 }
 
 // GetAllUsers returns all the users registered for the fest
 func GetAllUsers() ([]User, error) {
+	usersCollection, ctx := db.GetMongoCollectionWithContext(usersCollection)
 	var users []User
-
-	err := dbinstance.C(userCollection).Find(bson.M{}).All(&users)
-
+	cursor, err := usersCollection.Find(ctx, bson.M{})
+	if err != nil {
+		return nil, err
+	}
+	for cursor.Next(ctx) {
+		var user User
+		if err := cursor.Decode(&user); err != nil {
+			return nil, err
+		}
+		users = append(users, user)
+	}
 	return users, err
 }
 
 // GetUserByID returns the users given the userid
 func GetUserByID(userID int) (User, error) {
+	usersCollection, ctx := db.GetMongoCollectionWithContext(usersCollection)
 	var user User
-	log.Println(userID)
-	err := dbinstance.C(userCollection).Find(bson.M{"userid": userID}).One(&user)
-
+	err := usersCollection.FindOne(ctx, bson.M{"userid": userID}).Decode(&user)
 	return user, err
 }
 
 // CheckUserHash checks if the given combination of email and password exists in the db
 func CheckUserHash(email, password string) (bool, error) {
-	count, err := dbinstance.C(userCollection).Find(bson.M{"email": email, "pwd": password}).Count()
-
+	usersCollection, ctx := db.GetMongoCollectionWithContext(usersCollection)
+	count, err := usersCollection.Count(ctx, bson.M{"email": email, "pwd": password})
 	if err != nil {
 		return false, err
 	}
-
 	return count > 0, nil
-}
-
-func init() {
-	userID = countUsers()
-}
-
-func countUsers() int {
-	count, _ := dbinstance.C(userCollection).Count()
-
-	return count
 }

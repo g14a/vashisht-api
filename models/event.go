@@ -1,14 +1,12 @@
 package models
 
 import (
-	"log"
 	"sync"
 
+	"github.com/mongodb/mongo-go-driver/bson"
 	"gitlab.com/gowtham-munukutla/vashisht-api/config"
 
 	"gitlab.com/gowtham-munukutla/vashisht-api/db"
-	mgo "github.com/globalsign/mgo"
-	"github.com/globalsign/mgo/bson"
 )
 
 type Event struct {
@@ -23,78 +21,59 @@ type Event struct {
 	Description string `json:"description"`
 }
 
-var dbinstance *mgo.Database
-
 var (
 	eventsCollection = config.GetAppConfig().MongoConfig.Collections.EventCollectionName
-	eventsMu         sync.Mutex
-	size             int
-	err              error
+	eventsMutex      = &sync.Mutex{}
 )
-
-func init() {
-
-	dbinstance = db.GetDbInstance()
-
-	size, err = dbinstance.C(eventsCollection).Count()
-
-	if err != nil {
-		log.Fatal(err)
-	}
-}
-
-func incrementSize() {
-	eventsMu.Lock()
-	size++
-	eventsMu.Unlock()
-}
-
-func decrementSize() {
-	eventsMu.Lock()
-	size--
-	eventsMu.Unlock()
-}
 
 // AddEvent adds a new event into the db
 func AddEvent(newEvent *Event) error {
-
-	incrementSize()
-	newEvent.EventID = size
-
-	err := dbinstance.C(eventsCollection).Insert(&newEvent)
-
+	eventCollection, ctx := db.GetMongoCollectionWithContext(eventsCollection)
+	count, err := eventCollection.CountDocuments(ctx, bson.M{})
+	if err != nil {
+		return err
+	}
+	eventsMutex.Lock()
+	count = count + 1
+	newEvent.EventID = int(count)
+	eventsMutex.Unlock()
+	_, err = eventCollection.InsertOne(ctx, newEvent)
 	return err
 }
 
 // DeleteEvent deletes an events from the db
 func DeleteEvent(eventID int) error {
-	err := dbinstance.C(eventsCollection).Remove(bson.M{"id": eventID})
-
-	decrementSize()
-
+	eventCollection, ctx := db.GetMongoCollectionWithContext(eventsCollection)
+	_, err := eventCollection.DeleteOne(ctx, bson.M{"id": eventID})
 	return err
 }
 
 // UpdateEvent updates an event in the db
 func UpdateEvent(updateEvent *Event) error {
-
-	err := dbinstance.C(eventsCollection).Update(bson.M{"id": updateEvent.EventID}, &updateEvent)
-
+	eventCollection, ctx := db.GetMongoCollectionWithContext(eventsCollection)
+	_, err := eventCollection.ReplaceOne(ctx, bson.M{"id": updateEvent.EventID}, &updateEvent)
 	return err
 }
 
 // FindEventByID finds an event given its id
 func FindEventByID(id int) (Event, error) {
+	eventCollection, ctx := db.GetMongoCollectionWithContext(eventsCollection)
 	var event Event
-	err := dbinstance.C(eventsCollection).Find(bson.M{"id": id}).One(&event)
-
+	err := eventCollection.FindOne(ctx, bson.M{"id": id}).Decode(&event)
 	return event, err
 }
 
 // FindAllEvents returns all events in the fest db
 func FindAllEvents() ([]Event, error) {
+	eventCollection, ctx := db.GetMongoCollectionWithContext(eventsCollection)
 	var events []Event
-	err := dbinstance.C(eventsCollection).Find(bson.M{}).All(&events)
-
+	cursor, err := eventCollection.Find(ctx, bson.M{})
+	for cursor.Next(ctx) {
+		var event Event
+		if err := cursor.Decode(&event); err != nil {
+			return nil, err
+		}
+		events = append(events, event)
+	}
 	return events, err
 }
