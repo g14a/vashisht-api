@@ -4,6 +4,8 @@ import (
 	"log"
 	"sync"
 
+	"gitlab.com/gowtham-munukutla/vashisht-api/config"
+
 	"gitlab.com/gowtham-munukutla/vashisht-api/db"
 	mgo "gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
@@ -24,18 +26,17 @@ type Event struct {
 var dbinstance *mgo.Database
 
 var (
-	database   = "vashisht"
-	collection = "events"
-	eventsMu   sync.Mutex
-	size       int
-	err        error
+	eventsCollection = config.GetAppConfig().MongoConfig.Collections.EventCollectionName
+	eventsMu         sync.Mutex
+	size             int
+	err              error
 )
 
 func init() {
 
 	dbinstance = db.GetDbInstance()
 
-	size, err = dbinstance.C(collection).Count()
+	size, err = dbinstance.C(eventsCollection).Count()
 
 	if err != nil {
 		log.Fatal(err)
@@ -60,14 +61,14 @@ func AddEvent(newEvent *Event) error {
 	incrementSize()
 	newEvent.EventID = size
 
-	err := dbinstance.C(collection).Insert(&newEvent)
+	err := dbinstance.C(eventsCollection).Insert(&newEvent)
 
 	return err
 }
 
 // DeleteEvent deletes an events from the db
 func DeleteEvent(eventID int) error {
-	err := dbinstance.C(collection).Remove(bson.M{"id": eventID})
+	err := dbinstance.C(eventsCollection).Remove(bson.M{"id": eventID})
 
 	decrementSize()
 
@@ -77,7 +78,7 @@ func DeleteEvent(eventID int) error {
 // UpdateEvent updates an event in the db
 func UpdateEvent(updateEvent *Event) error {
 
-	err := dbinstance.C(collection).Update(bson.M{"id": updateEvent.EventID}, &updateEvent)
+	err := dbinstance.C(eventsCollection).Update(bson.M{"id": updateEvent.EventID}, &updateEvent)
 
 	return err
 }
@@ -85,7 +86,7 @@ func UpdateEvent(updateEvent *Event) error {
 // FindEventByID finds an event given its id
 func FindEventByID(id int) (Event, error) {
 	var event Event
-	err := dbinstance.C(collection).Find(bson.M{"id": id}).One(&event)
+	err := dbinstance.C(eventsCollection).Find(bson.M{"id": id}).One(&event)
 
 	return event, err
 }
@@ -93,7 +94,7 @@ func FindEventByID(id int) (Event, error) {
 // FindAllEvents returns all events in the fest db
 func FindAllEvents() ([]Event, error) {
 	var events []Event
-	err := dbinstance.C(collection).Find(bson.M{}).All(&events)
+	err := dbinstance.C(eventsCollection).Find(bson.M{}).All(&events)
 
 	return events, err
 }

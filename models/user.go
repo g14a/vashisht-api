@@ -5,6 +5,8 @@ import (
 	"log"
 	"sync"
 
+	"gitlab.com/gowtham-munukutla/vashisht-api/config"
+
 	"gopkg.in/mgo.v2/bson"
 )
 
@@ -19,7 +21,7 @@ type User struct {
 }
 
 var (
-	userCollection = "users"
+	userCollection = config.GetAppConfig().MongoConfig.Collections.UserCollectionName
 	userID         int
 	usersMu        sync.Mutex
 )

@@ -4,6 +4,8 @@ import (
 	"errors"
 	"log"
 
+	"gitlab.com/gowtham-munukutla/vashisht-api/config"
+
 	"gopkg.in/mgo.v2/bson"
 )
 
@@ -15,7 +17,7 @@ type Registration struct {
 }
 
 var (
-	eventRegCollection = "eventreg"
+	eventRegCollection = config.GetAppConfig().MongoConfig.Collections.RegistrationCollectionName
 )
 
 // AddRegistration adds a registration into the db
