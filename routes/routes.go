@@ -12,6 +12,7 @@ import (
 	"gitlab.com/gowtham-munukutla/vashisht-api/db"
 	"gitlab.com/gowtham-munukutla/vashisht-api/models"
 	mgo "gopkg.in/mgo.v2"
+	"gopkg.in/mgo.v2/bson"
 )
 
 var dbinstance *mgo.Database
@@ -209,6 +210,24 @@ func CheckIfUserRegisteredForEvent(w http.ResponseWriter, r *http.Request) {
 	respondWithJSON(w, http.StatusOK, ok)
 }
 
+// CheckIfUserRegisteredForEventByMongoID checks if a user registered for an event using MongoID
+func CheckIfUserRegisteredForEventByMongoID(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+
+	mongoIDStr := params["mongoid"]
+	eventID, _ := strconv.Atoi(params["eventid"])
+
+	mongoID := bson.ObjectIdHex(mongoIDStr)
+
+	ok, err := models.CheckIfUserRegisteredForEventByMongoID(mongoID, eventID)
+
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	respondWithJSON(w, http.StatusOK, ok)
+}
 
 func respondWithError(w http.ResponseWriter, httpCode int, message string) {
 	respondWithJSON(w, httpCode, map[string]string{"error": message})
@@ -242,5 +261,6 @@ func InitRoutes(r *mux.Router) {
 	r.HandleFunc("/users/{userid}/events", GetEventsOfUsers).Methods("GET")
 	r.HandleFunc("/users/{userid}/events/{eventid}/register", AddRegistration).Methods("POST")
 	r.HandleFunc("/users/{userid}/events/{eventid}/check", CheckIfUserRegisteredForEvent).Methods("GET")
+	r.HandleFunc("/users/{mongoid}/events/{eventid}/checkMongoID", CheckIfUserRegisteredForEventByMongoID).Methods("GET")
 
 }

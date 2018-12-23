@@ -100,3 +100,16 @@ func CheckIfUserRegisteredForEvent(userID, eventID int) (bool, error) {
 
 	return true, nil
 }
+
+// CheckIfUserRegisteredForEventByMongoID checks if the user registered for the event using Mongo Object ID
+func CheckIfUserRegisteredForEventByMongoID(mongoID bson.ObjectId, eventID int) (bool, error) {
+	var reg Registration
+
+	err := dbinstance.C(eventRegCollection).Find(bson.M{"_id": mongoID, "eventid": eventID}).One(&reg)
+
+	if err != nil {
+		return false, err
+	}
+
+	return true, nil
+}
