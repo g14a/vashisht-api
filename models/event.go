@@ -10,14 +10,15 @@ import (
 )
 
 type Event struct {
-	EventName string `json:"name"`
-	EventID   int    `bson:"id" json:"id"`
-	Fee       int    `json:"fee"`
-	TeamSize  int    `json:"teamsize"`
-	Category  string `json:"category"`
-	Day       int    `json:"day"`
-	StartTime int    `json:"start"`
-	EndTime   int    `json:"end"`
+	EventName   string `json:"name"`
+	EventID     int    `bson:"id" json:"id"`
+	Fee         int    `json:"fee"`
+	TeamSize    int    `json:"teamsize"`
+	Category    string `json:"category"`
+	Day         int    `json:"day"`
+	StartTime   int    `json:"start"`
+	EndTime     int    `json:"end"`
+	Description string `json:"description"`
 }
 
 var dbinstance *mgo.Database

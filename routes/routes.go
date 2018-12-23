@@ -192,6 +192,24 @@ func GetUsersForEvent(w http.ResponseWriter, r *http.Request) {
 	respondWithJSON(w, http.StatusOK, &users)
 }
 
+// CheckIfUserRegisteredForEvent checks if a user registered for an event
+func CheckIfUserRegisteredForEvent(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+
+	userID, _ := strconv.Atoi(params["userid"])
+	eventID, _ := strconv.Atoi(params["eventid"])
+
+	ok, err := models.CheckIfUserRegisteredForEvent(userID, eventID)
+
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	respondWithJSON(w, http.StatusOK, ok)
+}
+
+
 func respondWithError(w http.ResponseWriter, httpCode int, message string) {
 	respondWithJSON(w, httpCode, map[string]string{"error": message})
 }
@@ -223,4 +241,6 @@ func InitRoutes(r *mux.Router) {
 	r.HandleFunc("/users", GetAllUsers).Methods("GET")
 	r.HandleFunc("/users/{userid}/events", GetEventsOfUsers).Methods("GET")
 	r.HandleFunc("/users/{userid}/events/{eventid}/register", AddRegistration).Methods("POST")
+	r.HandleFunc("/users/{userid}/events/{eventid}/check", CheckIfUserRegisteredForEvent).Methods("GET")
+
 }

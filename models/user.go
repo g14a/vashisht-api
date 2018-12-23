@@ -61,6 +61,7 @@ func GetAllUsers() ([]User, error) {
 	return users, err
 }
 
+// GetUserByID returns the users given the userid
 func GetUserByID(userID int) (User, error) {
 	var user User
 	log.Println(userID)
@@ -78,4 +79,14 @@ func CheckUserHash(email, password string) (bool, error) {
 	}
 
 	return count > 0, nil
+}
+
+func init() {
+	userID = countUsers()
+}
+
+func countUsers() int {
+	count, _ := dbinstance.C(userCollection).Count()
+
+	return count
 }

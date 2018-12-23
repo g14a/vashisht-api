@@ -64,6 +64,7 @@ func GetEventsOfUser(userID int) ([]Event, error) {
 	return events, nil
 }
 
+// GetUsersForEvent returns all the users registered for a single event
 func GetUsersForEvent(eventID int) ([]User, error) {
 	var registrations []Registration
 	err := dbinstance.C(eventRegCollection).Find(bson.M{"eventid": eventID}).All(&registrations)
@@ -86,5 +87,16 @@ func GetUsersForEvent(eventID int) ([]User, error) {
 	return users, nil
 }
 
-// get all events registered by a user
-// get all users registered for an event
+// CheckIfUserRegisteredForEvent checks if the user registered for a particular event
+func CheckIfUserRegisteredForEvent(userID, eventID int) (bool, error) {
+
+	var reg Registration
+
+	err := dbinstance.C(eventRegCollection).Find(bson.M{"userid": userID, "eventid": eventID}).One(&reg)
+
+	if err != nil {
+		return false, err
+	}
+
+	return true, nil
+}
