@@ -1,11 +1,5 @@
 mongo:
-  hosts:
-    - munukutla-mongo-cluster-shard-00-00-kt0qc.mongodb.net:27017
-    - munukutla-mongo-cluster-shard-00-01-kt0qc.mongodb.net:27017
-    - munukutla-mongo-cluster-shard-00-02-kt0qc.mongodb.net:27017
-  user: mongoadmin
-  password: fofx
-  database: vashisht
+  url: mongodb+srv://chaitanya:fofx@munukutla-mongo-cluster-kt0qc.mongodb.net/readWriteAnyDatabase@admin?retryWrites=true
   collections:
     users: users
     events: events

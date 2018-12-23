@@ -2,11 +2,10 @@ package models
 
 import (
 	"errors"
-	"log"
 
+	"github.com/mongodb/mongo-go-driver/bson"
 	"gitlab.com/gowtham-munukutla/vashisht-api/config"
-
-	"github.com/globalsign/mgo/bson"
+	"gitlab.com/gowtham-munukutla/vashisht-api/db"
 )
 
 // Registration contains the record of user registered for a particular event
@@ -17,37 +16,42 @@ type Registration struct {
 }
 
 var (
-	eventRegCollection = config.GetAppConfig().MongoConfig.Collections.RegistrationCollectionName
+	eventRegCollectionName = config.GetAppConfig().MongoConfig.Collections.RegistrationCollectionName
 )
 
 // AddRegistration adds a registration into the db
 func AddRegistration(r *Registration) error {
-
-	count, err := dbinstance.C(eventRegCollection).Find(bson.M{"userid": r.UserID, "eventid": r.EventID}).Count()
-
+	eventRegCollection, ctx := db.GetMongoCollectionWithContext(eventRegCollectionName)
+	count, err := eventRegCollection.Count(ctx, bson.M{"userid": r.UserID, "eventid": r.EventID})
 	if count > 0 {
 		return errors.New("User already registered")
 	}
-
-	err = dbinstance.C(eventRegCollection).Insert(&r)
-
+	_, err = eventRegCollection.InsertOne(ctx, r)
 	return err
 }
 
 // CancelRegistration cancels a registration of an event
 func CancelRegistration(r Registration) error {
-	err := dbinstance.C(eventRegCollection).Remove(bson.M{"eventid": r.EventID, "userid": r.UserID})
-
+	eventRegCollection, ctx := db.GetMongoCollectionWithContext(eventRegCollectionName)
+	_, err := eventRegCollection.DeleteOne(ctx, bson.M{"eventid": r.EventID, "userid": r.UserID})
 	return err
 }
 
 // GetEventsOfUser returns all the events registered by a user
 func GetEventsOfUser(userID int) ([]Event, error) {
+	eventRegCollection, ctx := db.GetMongoCollectionWithContext(eventRegCollectionName)
 	var registrations []Registration
-	err := dbinstance.C(eventRegCollection).Find(bson.M{"userid": userID}).All(&registrations)
-
+	cursor, err := eventRegCollection.Find(ctx, bson.M{"userid": userID})
 	if err != nil {
 		return nil, err
+	}
+	for cursor.Next(ctx) {
+		var registration Registration
+		if err := cursor.Decode(&registration); err != nil {
+			return nil, err
+		} else {
+			registrations = append(registrations, registration)
+		}
 	}
 
 	events := make([]Event, 0)
@@ -68,21 +72,24 @@ func GetEventsOfUser(userID int) ([]Event, error) {
 
 // GetUsersForEvent returns all the users registered for a single event
 func GetUsersForEvent(eventID int) ([]User, error) {
+	eventRegCollection, ctx := db.GetMongoCollectionWithContext(eventRegCollectionName)
 	var registrations []Registration
-	err := dbinstance.C(eventRegCollection).Find(bson.M{"eventid": eventID}).All(&registrations)
-
+	cursor, err := eventRegCollection.Find(ctx, bson.M{"eventid": eventID})
 	if err != nil {
 		return nil, err
 	}
+	for cursor.Next(ctx) {
+		var registration Registration
+		if err := cursor.Decode(&registration); err != nil {
+			return nil, err
+		}
+		registrations = append(registrations, registration)
+	}
 
 	users := make([]User, 0)
-
 	for _, reg := range registrations {
-		log.Println(reg.RegID)
 		userID := reg.UserID
-
 		user, _ := GetUserByID(userID)
-
 		users = append(users, user)
 	}
 
@@ -91,27 +98,20 @@ func GetUsersForEvent(eventID int) ([]User, error) {
 
 // CheckIfUserRegisteredForEvent checks if the user registered for a particular event
 func CheckIfUserRegisteredForEvent(userID, eventID int) (bool, error) {
-
-	var reg Registration
-
-	err := dbinstance.C(eventRegCollection).Find(bson.M{"userid": userID, "eventid": eventID}).One(&reg)
-
+	eventRegCollection, ctx := db.GetMongoCollectionWithContext(eventRegCollectionName)
+	count, err := eventRegCollection.Count(ctx, bson.M{"userid": userID, "eventid": eventID})
 	if err != nil {
 		return false, err
 	}
-
-	return true, nil
+	return count > 0, nil
 }
 
 // CheckIfUserRegisteredForEventByMongoID checks if the user registered for the event using Mongo Object ID
-func CheckIfUserRegisteredForEventByMongoID(mongoID bson.ObjectId, eventID int) (bool, error) {
-	var reg Registration
-
-	err := dbinstance.C(eventRegCollection).Find(bson.M{"_id": mongoID, "eventid": eventID}).One(&reg)
-
+func CheckIfUserRegisteredForEventByMongoID(mongoID string, eventID int) (bool, error) {
+	eventRegCollection, ctx := db.GetMongoCollectionWithContext(eventRegCollectionName)
+	count, err := eventRegCollection.Count(ctx, bson.M{"_id": mongoID, "eventid": eventID})
 	if err != nil {
 		return false, err
 	}
-
-	return true, nil
+	return count > 0, nil
 }

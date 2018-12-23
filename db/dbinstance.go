@@ -1,51 +1,47 @@
 package db
 
 import (
-	"crypto/tls"
-	"net"
+	"context"
+	"log"
 	"sync"
+	"time"
 
-	"gitlab.com/gowtham-munukutla/vashisht-api/config"
-
-	mgo "github.com/globalsign/mgo"
+	"github.com/mongodb/mongo-go-driver/mongo"
 )
 
 var (
-	dbInstance *mgo.Database
-	once       sync.Once
+	mongoClient *mongo.Client
+	once        sync.Once
 )
 
-func GetDbInstance() *mgo.Database {
+func getMongoClient() *mongo.Client {
 	once.Do(func() {
-		connectDB()
+		connectDBOfficial()
 	})
 
-	return dbInstance
+	return mongoClient
 }
 
-func connectDB() {
-	config := config.GetAppConfig()
-	mongoConfig := config.MongoConfig
-
-	tlsConfig := &tls.Config{}
-
-	dialInfo := &mgo.DialInfo{
-		Addrs:    mongoConfig.Hosts,
-		Database: mongoConfig.Database,
-		Username: mongoConfig.Username,
-		Password: mongoConfig.Password,
-		Source:   "scram-sha1",
+func GetMongoCollectionWithContext(collectionName string) (*mongo.Collection, context.Context) {
+	mongoClient = getMongoClient()
+	collection := mongoClient.Database("vashisht").Collection(collectionName)
+	ctx, err := context.WithTimeout(context.Background(), 10*time.Second)
+	if err != nil {
+		log.Println(err)
 	}
+	return collection, ctx
+}
 
-	dialInfo.DialServer = func(addr *mgo.ServerAddr) (net.Conn, error) {
-		conn, err := tls.Dial("tcp", addr.String(), tlsConfig)
-		return conn, err
-	}
-
-	session, err := mgo.DialWithInfo(dialInfo)
+func connectDBOfficial() {
+	mClient, err := mongo.NewClient("mongodb+srv://chaitanya:fofx@munukutla-mongo-cluster-kt0qc.mongodb.net/readWriteAnyDatabase@admin?retryWrites=true")
 	if err != nil {
 		panic(err.Error())
 	}
 
-	dbInstance = session.DB(mongoConfig.Database)
+	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+	err = mClient.Connect(ctx)
+	if err != nil {
+		panic(err.Error())
+	}
+	mongoClient = mClient
 }
