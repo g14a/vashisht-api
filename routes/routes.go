@@ -255,6 +255,26 @@ func CheckIfUserRegisteredForEventByMongoID(w http.ResponseWriter, r *http.Reque
 	respondWithJSON(w, http.StatusOK, ok)
 }
 
+func Login(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+
+	var user models.User
+
+	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
+		respondWithError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	responseUser, err := models.Login(user.EmailAddress, user.Password)
+
+	if err != nil {
+		log.Fatal(err)
+		return
+	}
+
+	respondWithJSON(w, http.StatusOK, &responseUser)
+}
+
 func respondWithError(w http.ResponseWriter, httpCode int, message string) {
 	respondWithJSON(w, httpCode, map[string]string{"error": message})
 }
@@ -280,6 +300,7 @@ func InitRoutes(r *mux.Router) {
 	// User routes
 	r.HandleFunc("/users", AddUser).Methods("POST")
 	r.HandleFunc("/users", GetAllUsers).Methods("GET")
+	r.HandleFunc("/users/login", Login).Methods("POST")
 	r.HandleFunc("/users/{userid}/events", GetEventsOfUsers).Methods("GET")
 	r.HandleFunc("/users/{userid}/events/{eventid}/register", AddRegistration).Methods("POST")
 	r.HandleFunc("/users/{userid}/events/{eventid}/cancel", CancelRegistration).Methods("DELETE")

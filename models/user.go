@@ -65,11 +65,27 @@ func GetUserByID(userID int) (User, error) {
 }
 
 // CheckUserHash checks if the given combination of email and password exists in the db
-func CheckUserHash(email, password string) (bool, error) {
+func CheckUserHash(email, password string) bool {
 	usersCollection, ctx := db.GetMongoCollectionWithContext(usersCollection)
 	count, err := usersCollection.Count(ctx, bson.M{"email": email, "pwd": password})
 	if err != nil {
-		return false, err
+		return false
 	}
-	return count > 0, nil
+	return count > 0
+}
+
+func Login(email, password string) (*User, error) {
+	usersCollection, ctx := db.GetMongoCollectionWithContext(usersCollection)
+
+	var user User
+
+	if CheckUserHash(email, password) {
+		err := usersCollection.FindOne(ctx, bson.M{"email": email, "pwd": password}).Decode(&user)
+
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return &user, nil
 }
