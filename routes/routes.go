@@ -109,6 +109,7 @@ func AddUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	respondWithJSON(w, http.StatusCreated, user)
+
 }
 
 // GetAllUsers returns all the users registered for the fest
@@ -266,14 +267,15 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err := models.Login(user.EmailAddress, user.Password)
+	responseUser, err := models.Login(user.EmailAddress, user.Password)
 
 	if err != nil {
-		log.Fatal(err)
+		respondWithJSON(w, http.StatusForbidden, map[string]string{"error": "user not found"})
 		return
 	}
 
-	respondWithJSON(w, http.StatusForbidden	, map[string]string{"result": "User not found"})
+	respondWithJSON(w, http.StatusOK, &responseUser)
+
 }
 
 func respondWithError(w http.ResponseWriter, httpCode int, message string) {
