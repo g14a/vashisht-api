@@ -282,5 +282,4 @@ func InitRoutes(r *mux.Router) {
 	r.HandleFunc("/users/{userid}/events/{eventid}/cancel", CancelRegistration).Methods("DELETE")
 	r.HandleFunc("/users/{userid}/events/{eventid}/check", CheckIfUserRegisteredForEvent).Methods("GET")
 	r.HandleFunc("/users/{mongoid}/events/{eventid}/checkMongoID", CheckIfUserRegisteredForEventByMongoID).Methods("GET")
-
 }
