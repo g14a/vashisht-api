@@ -1,6 +1,7 @@
 package models
 
 import (
+	"log"
 	"sync"
 
 	"github.com/mongodb/mongo-go-driver/bson"
@@ -10,13 +11,12 @@ import (
 
 // User is the structure of how a User looks
 type User struct {
-	Name         string      `bson:"name" json:"name"`
-	Password     string      `bson:"pwd" json:"pwd"`
-	PhoneNumber  string      `bson:"number" json:"number"`
-	EmailAddress string      `bson:"email" json:"email"`
-	CollegeName  string      `bson:"college" json:"college"`
-	UserID       int         `bson:"userid" json:"userid"`
-	MongoID      interface{} `bson:"_id" json:"mongoid"`
+	Name         string `bson:"name" json:"name"`
+	Password     string `bson:"pwd" json:"pwd"`
+	PhoneNumber  string `bson:"number" json:"number"`
+	EmailAddress string `bson:"email" json:"email"`
+	CollegeName  string `bson:"college" json:"college"`
+	UserID       int    `bson:"userid" json:"userid"`
 }
 
 var (
@@ -26,6 +26,7 @@ var (
 
 // AddUser adds a new user after registration into the db
 func AddUser(u *User) error {
+	log.Println("Will add user")
 	usersCollection, ctx := db.GetMongoCollectionWithContext(usersCollection)
 	count, err := usersCollection.CountDocuments(ctx, bson.M{})
 	eventsMutex.Lock()

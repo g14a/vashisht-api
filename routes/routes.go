@@ -98,6 +98,7 @@ func AddUser(w http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(&user)
 
 	if err != nil {
+		log.Println("Error:", err)
 		respondWithError(w, http.StatusBadRequest, "Invalid payload")
 		return
 	}
