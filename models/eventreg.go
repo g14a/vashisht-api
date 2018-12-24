@@ -31,10 +31,15 @@ func AddRegistration(r *Registration) error {
 }
 
 // CancelRegistration cancels a registration of an event
-func CancelRegistration(r Registration) error {
+func CancelRegistration(r Registration) (bool, error) {
 	eventRegCollection, ctx := db.GetMongoCollectionWithContext(eventRegCollectionName)
 	_, err := eventRegCollection.DeleteOne(ctx, bson.M{"eventid": r.EventID, "userid": r.UserID})
-	return err
+
+	if err != nil {
+		return false, err
+	}
+
+	return true, nil
 }
 
 // GetEventsOfUser returns all the events registered by a user

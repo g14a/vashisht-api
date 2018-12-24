@@ -176,12 +176,15 @@ func CancelRegistration(w http.ResponseWriter, r *http.Request) {
 
 	registration.EventID = eventIDInt
 	registration.UserID = userIDInt
-	if err := models.CancelRegistration(registration); err != nil {
+
+	ok, err := models.CancelRegistration(registration)
+
+	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	respondWithJSON(w, http.StatusCreated, map[string]string{"result": "Deleted successfully"})
+	respondWithJSON(w, http.StatusCreated, map[string]string{"result": strconv.FormatBool(ok)})
 
 }
 
