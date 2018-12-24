@@ -255,6 +255,7 @@ func CheckIfUserRegisteredForEventByMongoID(w http.ResponseWriter, r *http.Reque
 	respondWithJSON(w, http.StatusOK, ok)
 }
 
+// Login logs the user into the application
 func Login(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
@@ -265,14 +266,14 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	responseUser, err := models.Login(user.EmailAddress, user.Password)
+	_, err := models.Login(user.EmailAddress, user.Password)
 
 	if err != nil {
 		log.Fatal(err)
 		return
 	}
 
-	respondWithJSON(w, http.StatusOK, &responseUser)
+	respondWithJSON(w, http.StatusForbidden	, map[string]string{"result": "User not found"})
 }
 
 func respondWithError(w http.ResponseWriter, httpCode int, message string) {
