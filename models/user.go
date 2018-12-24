@@ -10,12 +10,13 @@ import (
 
 // User is the structure of how a User looks
 type User struct {
-	Name         string `bson:"name" json:"name"`
-	Password     string `bson:"pwd" json:"pwd"`
-	PhoneNumber  string `bson:"number" json:"number"`
-	EmailAddress string `bson:"email" json:"email"`
-	CollegeName  string `bson:"college" json:"college"`
-	UserID       int    `bson:"userid" json:"userid"`
+	Name         string      `bson:"name" json:"name"`
+	Password     string      `bson:"pwd" json:"pwd"`
+	PhoneNumber  string      `bson:"number" json:"number"`
+	EmailAddress string      `bson:"email" json:"email"`
+	CollegeName  string      `bson:"college" json:"college"`
+	UserID       int         `bson:"userid" json:"userid"`
+	MongoID      interface{} `bson:"_id" json:"mongoid"`
 }
 
 var (
@@ -32,6 +33,7 @@ func AddUser(u *User) error {
 	u.UserID = int(count)
 	eventsMutex.Unlock()
 	_, err = usersCollection.InsertOne(ctx, u)
+
 	return err
 }
 
