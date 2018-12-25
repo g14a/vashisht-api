@@ -26,7 +26,7 @@ type MailConfig struct {
 
 type SMTPConfig struct {
 	Host string `yaml:"host"`
-	Port string `yaml:"port"`
+	Port int    `yaml:"port"`
 }
 type MailSenderConfig struct {
 	Name     string `yaml:"name"`

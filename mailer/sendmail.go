@@ -1,12 +1,16 @@
 package mailer
 
 import (
+	"bytes"
 	"crypto/tls"
 	"fmt"
-	"net/smtp"
+	"html/template"
+	"log"
 	"strings"
 
 	"gitlab.com/gowtham-munukutla/vashisht-api/config"
+	"gitlab.com/gowtham-munukutla/vashisht-api/models"
+	"gopkg.in/gomail.v2"
 )
 
 type Mail struct {
@@ -33,79 +37,53 @@ func (mail *Mail) BuildMessage() string {
 		message += fmt.Sprintf("To: %s\r\n", strings.Join(mail.toIds, ";"))
 	}
 
+	mime := "MIME-version: 1.0;\nContent-Type: text/html; charset=\"UTF-8\";\n\n"
+
 	message += fmt.Sprintf("Subject: %s\r\n", mail.subject)
+	message += "\r\n" + mime
 	message += "\r\n" + mail.body
+
+	log.Println(message)
 
 	return message
 }
 
-func SendMail(body string, subject string, recipients []string) error {
+func SendRegistrationEmail(user *models.User) error {
+	t := template.New("template.html")
+	t, _ = t.ParseFiles("mailer/template.html")
+
+	var tpl bytes.Buffer
+	if err := t.Execute(&tpl, user); err != nil {
+		return err
+	}
+
+	result := tpl.String()
+
+	return SendMail(result, "Vashisht 2018 Registration", user.EmailAddress)
+
+}
+
+func SendMail(body string, subject string, recipient string) error {
 
 	appConfig := config.GetAppConfig()
 	mailConfig := appConfig.MailConfig
 
-	mail := Mail{}
-	mail.senderName = mailConfig.MailSenderConfig.Name
-	mail.senderId = mailConfig.MailSenderConfig.Email
-	mail.toIds = recipients
-	mail.subject = subject
-	mail.body = body
+	smtpHost := mailConfig.SMTPConfig.Host
+	smtpPort := mailConfig.SMTPConfig.Port
 
-	messageBody := mail.BuildMessage()
+	senderName := mailConfig.MailSenderConfig.Name
+	senderMailID := mailConfig.MailSenderConfig.Email
+	senderAuthPassword := mailConfig.MailSenderConfig.Password
 
-	smtpServer := SmtpServer{host: mailConfig.SMTPConfig.Host, port: mailConfig.SMTPConfig.Port}
+	d := gomail.NewDialer(smtpHost, smtpPort, senderMailID, senderAuthPassword)
+	d.TLSConfig = &tls.Config{InsecureSkipVerify: true}
 
-	//build an auth
-	auth := smtp.PlainAuth("", mail.senderId, mailConfig.MailSenderConfig.Password, smtpServer.host)
+	m := gomail.NewMessage()
+	m.SetHeader("From", fmt.Sprintf("%s <%s>", senderName, senderMailID))
+	m.SetHeader("To", recipient)
+	m.SetHeader("Subject", subject)
+	m.SetBody("text/html", body)
 
-	// Gmail will reject connection if it's not secure
-	// TLS config
-	tlsconfig := &tls.Config{
-		InsecureSkipVerify: true,
-		ServerName:         smtpServer.host,
-	}
-
-	conn, err := tls.Dial("tcp", smtpServer.ServerName(), tlsconfig)
-	if err != nil {
-		return err
-	}
-
-	client, err := smtp.NewClient(conn, smtpServer.host)
-	if err != nil {
-		return err
-	}
-
-	// step 1: Use Auth
-	if err = client.Auth(auth); err != nil {
-		return err
-	}
-
-	// step 2: add all from and to
-	if err = client.Mail(mail.senderId); err != nil {
-		return err
-	}
-	for _, k := range mail.toIds {
-		if err = client.Rcpt(k); err != nil {
-			return err
-		}
-	}
-
-	// Data
-	w, err := client.Data()
-	if err != nil {
-		return err
-	}
-
-	_, err = w.Write([]byte(messageBody))
-	if err != nil {
-		return err
-	}
-
-	err = w.Close()
-	if err != nil {
-		return err
-	}
-
-	err = client.Quit()
-	return err
+	// Send the email to Bob
+	return d.DialAndSend(m)
 }
