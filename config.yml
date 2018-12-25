@@ -4,3 +4,12 @@ mongo:
     users: users
     events: events
     registrations: eventsreg
+
+mail:
+  smtp:
+    host: smtp.gmail.com
+    port:  465
+  sender:
+    name: "Vashisht IIITD&M Technical Affairs"
+    email: chaitanya.m61292@gmail.com
+    password: uisvh8e57vw
