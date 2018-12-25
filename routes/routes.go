@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"strconv"
 
+	"gitlab.com/gowtham-munukutla/vashisht-api/mailer"
+
 	"github.com/gorilla/mux"
 	uuid "github.com/satori/go.uuid"
 	"gitlab.com/gowtham-munukutla/vashisht-api/models"
@@ -110,6 +112,10 @@ func AddUser(w http.ResponseWriter, r *http.Request) {
 
 	respondWithJSON(w, http.StatusCreated, user)
 
+	// Send the mail after the users is added into the db
+	mailErr := mailer.SendRegistrationEmail(&user)
+
+	log.Println(mailErr)
 }
 
 // GetAllUsers returns all the users registered for the fest
