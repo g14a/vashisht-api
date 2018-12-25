@@ -1,11 +1,12 @@
-package mail
+package mailer
 
 import (
 	"crypto/tls"
 	"fmt"
-	"log"
 	"net/smtp"
 	"strings"
+
+	"gitlab.com/gowtham-munukutla/vashisht-api/config"
 )
 
 type Mail struct {
@@ -38,21 +39,24 @@ func (mail *Mail) BuildMessage() string {
 	return message
 }
 
-func SendMail(body string) {
+func SendMail(body string, subject string, recipients []string) error {
+
+	appConfig := config.GetAppConfig()
+	mailConfig := appConfig.MailConfig
+
 	mail := Mail{}
-	mail.senderName = "Bauaa Singh"
-	mail.senderId = "chaitanya.m61292@gmail.com"
-	mail.toIds = []string{"gowtham.m81197@gmail.com"}
-	mail.subject = "This is the email subject"
+	mail.senderName = mailConfig.MailSenderConfig.Name
+	mail.senderId = mailConfig.MailSenderConfig.Email
+	mail.toIds = recipients
+	mail.subject = subject
 	mail.body = body
 
 	messageBody := mail.BuildMessage()
 
-	smtpServer := SmtpServer{host: "smtp.gmail.com", port: "465"}
+	smtpServer := SmtpServer{host: mailConfig.SMTPConfig.Host, port: mailConfig.SMTPConfig.Port}
 
-	log.Println(smtpServer.host)
 	//build an auth
-	auth := smtp.PlainAuth("", mail.senderId, "uisvh8e57vw", smtpServer.host)
+	auth := smtp.PlainAuth("", mail.senderId, mailConfig.MailSenderConfig.Password, smtpServer.host)
 
 	// Gmail will reject connection if it's not secure
 	// TLS config
@@ -63,47 +67,45 @@ func SendMail(body string) {
 
 	conn, err := tls.Dial("tcp", smtpServer.ServerName(), tlsconfig)
 	if err != nil {
-		log.Panic(err)
+		return err
 	}
 
 	client, err := smtp.NewClient(conn, smtpServer.host)
 	if err != nil {
-		log.Panic(err)
+		return err
 	}
 
 	// step 1: Use Auth
 	if err = client.Auth(auth); err != nil {
-		log.Panic(err)
+		return err
 	}
 
 	// step 2: add all from and to
 	if err = client.Mail(mail.senderId); err != nil {
-		log.Panic(err)
+		return err
 	}
 	for _, k := range mail.toIds {
 		if err = client.Rcpt(k); err != nil {
-			log.Panic(err)
+			return err
 		}
 	}
 
 	// Data
 	w, err := client.Data()
 	if err != nil {
-		log.Panic(err)
+		return err
 	}
 
 	_, err = w.Write([]byte(messageBody))
 	if err != nil {
-		log.Panic(err)
+		return err
 	}
 
 	err = w.Close()
 	if err != nil {
-		log.Panic(err)
+		return err
 	}
 
-	client.Quit()
-
-	log.Println("Mail sent successfully")
-
+	err = client.Quit()
+	return err
 }
