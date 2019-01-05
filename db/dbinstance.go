@@ -1,6 +1,7 @@
 package db
 
 import (
+	"gitlab.com/gowtham-munukutla/vashisht-api/config"
 	"context"
 	"log"
 	"sync"
@@ -33,7 +34,9 @@ func GetMongoCollectionWithContext(collectionName string) (*mongo.Collection, co
 }
 
 func connectDBOfficial() {
-	mClient, err := mongo.NewClient("mongodb+srv://chaitanya:fofx@munukutla-mongo-cluster-kt0qc.mongodb.net/readWriteAnyDatabase@admin?retryWrites=true")
+	appConfigInstance := config.GetAppConfig()
+
+	mClient, err := mongo.NewClient(appConfigInstance.MongoConfig.Hosts)
 	if err != nil {
 		panic(err.Error())
 	}
