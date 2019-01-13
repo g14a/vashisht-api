@@ -6,6 +6,7 @@ require (
 	github.com/golang/snappy v0.0.0-20180518054509-2e65f85255db // indirect
 	github.com/gorilla/mux v1.6.2
 	github.com/mongodb/mongo-go-driver v0.1.0
+	github.com/rs/cors v1.3.0
 	github.com/satori/go.uuid v1.2.0
 	github.com/xdg/scram v0.0.0-20180814205039-7eeb5667e42c // indirect
 	github.com/xdg/stringprep v1.0.0 // indirect
