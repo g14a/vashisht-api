@@ -8,7 +8,8 @@ import (
 	"gitlab.com/gowtham-munukutla/vashisht-api/routes"
 
 	"github.com/gorilla/mux"
-	"github.com/rs/cors"
+	"github.com/gorilla/handlers"
+
 )
 
 func main() {
@@ -17,19 +18,16 @@ func main() {
 
 	routes.InitRoutes(r)
 
-	c := cors.New(cors.Options{
-		AllowedOrigins:   []string{"https://quiet-reef-46852.herokuapp.com"},
-		AllowCredentials: true,
-	})
-
-	handler := c.Handler(r)
+	headers := handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "Authorization"}) 
+	methods := handlers.AllowedMethods([]string{"GET", "POST", "PUT", "DELETE"})
+	origins := handlers.AllowedOrigins([]string{"*"})
 
 	if os.Getenv("PORT") == "" {
-		if err := http.ListenAndServe(":8000", handler); err != nil {
+		if err := http.ListenAndServe(":8000", handlers.CORS(headers, methods, origins)(r)); err != nil {
 			log.Fatal(err)
 		}
 	} else {
-		if err := http.ListenAndServe(":"+os.Getenv("PORT"), handler); err != nil {
+		if err := http.ListenAndServe(":"+os.Getenv("PORT"), handlers.CORS(headers, methods, origins)(r)); err != nil {
 			log.Fatal(err)
 		}
 	}
