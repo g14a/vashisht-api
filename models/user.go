@@ -1,6 +1,7 @@
 package models
 
 import (
+	"fmt"
 	"log"
 	"sync"
 
@@ -86,6 +87,8 @@ func Login(email, password string) (*User, error) {
 			return nil, err
 		}
 	}
+
+	fmt.Println(&user)
 
 	return &user, nil
 }

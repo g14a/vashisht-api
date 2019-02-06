@@ -19,6 +19,7 @@ type Event struct {
 	StartTime   int    `json:"start"`
 	EndTime     int    `json:"end"`
 	Description string `json:"description"`
+	ImageUrl    string `json:"url"`
 }
 
 var (
