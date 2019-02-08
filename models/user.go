@@ -1,7 +1,6 @@
 package models
 
 import (
-	"fmt"
 	"log"
 	"sync"
 
@@ -75,20 +74,17 @@ func CheckUserHash(email, password string) bool {
 	return count > 0
 }
 
-func Login(email, password string) (*User, error) {
+func Login(email, password string) (interface{}, error) {
 	usersCollection, ctx := db.GetMongoCollectionWithContext(usersCollection)
 
-	var user User
-
+	var err error
 	if CheckUserHash(email, password) {
-		err := usersCollection.FindOne(ctx, bson.M{"email": email, "pwd": password}).Decode(&user)
+		var user User
 
-		if err != nil {
-			return nil, err
-		}
+		err = usersCollection.FindOne(ctx, bson.M{"email": email, "pwd": password}).Decode(&user)
+
+		return &user, nil
 	}
 
-	fmt.Println(&user)
-
-	return &user, nil
+	return nil, err
 }
