@@ -74,6 +74,7 @@ func CheckUserHash(email, password string) bool {
 	return count > 0
 }
 
+// Login checks if a user combination is present in the database. If yes, returns the user object, or else returns a nil
 func Login(email, password string) (interface{}, error) {
 	usersCollection, ctx := db.GetMongoCollectionWithContext(usersCollection)
 

@@ -276,12 +276,16 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	responseUser, err := models.Login(user.EmailAddress, user.Password)
 
 	if err != nil {
-		respondWithJSON(w, http.StatusForbidden, map[string]string{"error": "user not found"})
+		respondWithJSON(w, http.StatusNotFound , map[string]string{"error": "user not found"})
+		return
+	}
+
+	if responseUser == nil {
+		respondWithJSON(w, http.StatusNotFound, map[string]string{"error": "user not found"})
 		return
 	}
 
 	respondWithJSON(w, http.StatusOK, &responseUser)
-
 }
 
 func respondWithError(w http.ResponseWriter, httpCode int, message string) {
