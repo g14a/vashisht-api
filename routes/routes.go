@@ -275,13 +275,8 @@ func Login(w http.ResponseWriter, r *http.Request) {
 
 	responseUser, err := models.Login(user.EmailAddress, user.Password)
 
-	if err != nil {
-		respondWithJSON(w, http.StatusNotFound , map[string]string{"error": "user not found"})
-		return
-	}
-
-	if responseUser == nil {
-		respondWithJSON(w, http.StatusNotFound, map[string]string{"error": "user not found"})
+	if err != nil || responseUser == nil {
+		respondWithJSON(w, http.StatusNotFound, nil)
 		return
 	}
 
