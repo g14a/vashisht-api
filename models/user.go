@@ -4,6 +4,8 @@ import (
 	"log"
 	"sync"
 
+	"gitlab.com/gowtham-munukutla/vashisht-api/idgen"
+
 	"github.com/mongodb/mongo-go-driver/bson"
 	"gitlab.com/gowtham-munukutla/vashisht-api/config"
 	"gitlab.com/gowtham-munukutla/vashisht-api/db"
@@ -17,6 +19,7 @@ type User struct {
 	EmailAddress string `bson:"email" json:"email"`
 	CollegeName  string `bson:"college" json:"college"`
 	UserID       int    `bson:"userid" json:"userid"`
+	SamID        string `bson:"samid" json:"samid"`
 }
 
 var (
@@ -32,6 +35,7 @@ func AddUser(u *User) error {
 	eventsMutex.Lock()
 	count = count + 1
 	u.UserID = int(count)
+	u.SamID = idgen.GenerateSamID(u.UserID)
 	eventsMutex.Unlock()
 	_, err = usersCollection.InsertOne(ctx, u)
 
