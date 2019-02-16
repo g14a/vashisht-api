@@ -1,6 +1,7 @@
 package models
 
 import (
+	"errors"
 	"log"
 	"sync"
 
@@ -31,6 +32,13 @@ var (
 func AddUser(u *User) error {
 	log.Println("Will add user")
 	usersCollection, ctx := db.GetMongoCollectionWithContext(usersCollection)
+
+	duplicateUsers, err := usersCollection.Count(ctx, bson.M{"name": u.Name, "number": u.PhoneNumber, "email": u.EmailAddress})
+
+	if duplicateUsers > 0 {
+		return errors.New("user already exists")
+	}
+
 	count, err := usersCollection.CountDocuments(ctx, bson.M{})
 	eventsMutex.Lock()
 	count = count + 1
