@@ -111,11 +111,6 @@ func AddUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	respondWithJSON(w, http.StatusCreated, user)
-
-	// Send the mail after the users is added into the db
-	mailErr := mailer.SendRegistrationEmail(&user)
-
-	log.Println(mailErr)
 }
 
 // GetAllUsers returns all the users registered for the fest

@@ -7,9 +7,8 @@ import (
 
 	"gitlab.com/gowtham-munukutla/vashisht-api/routes"
 
-	"github.com/gorilla/mux"
 	"github.com/gorilla/handlers"
-
+	"github.com/gorilla/mux"
 )
 
 func main() {
@@ -18,7 +17,7 @@ func main() {
 
 	routes.InitRoutes(r)
 
-	headers := handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "Authorization"}) 
+	headers := handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "Authorization"})
 	methods := handlers.AllowedMethods([]string{"GET", "POST", "PUT", "DELETE"})
 	origins := handlers.AllowedOrigins([]string{"*"})
 

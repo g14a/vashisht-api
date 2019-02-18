@@ -20,7 +20,7 @@ type User struct {
 	PhoneNumber  string `bson:"number" json:"number"`
 	EmailAddress string `bson:"email" json:"email"`
 	CollegeName  string `bson:"college" json:"college"`
-	Password     string `bson:"pwd" json:"pwd"`
+	Password     string `bson:"pwd" json:",omitempty"`
 	UserID       int    `bson:"userid" json:"userid"`
 	SamID        string `bson:"samid" json:"samid"`
 }
