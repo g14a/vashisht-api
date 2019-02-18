@@ -14,11 +14,13 @@ import (
 
 // User is the structure of how a User looks
 type User struct {
-	Name         string `bson:"name" json:"name"`
-	Password     string `bson:"pwd" json:"pwd"`
+	FirstName    string `bson:"fname" json:"fname"`
+	LastName     string `bson:"lname" json:"lname"`
+	Gender       string `bson:"gender" json:"gender"`
 	PhoneNumber  string `bson:"number" json:"number"`
 	EmailAddress string `bson:"email" json:"email"`
 	CollegeName  string `bson:"college" json:"college"`
+	Password     string `bson:"pwd" json:"pwd"`
 	UserID       int    `bson:"userid" json:"userid"`
 	SamID        string `bson:"samid" json:"samid"`
 }
