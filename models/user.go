@@ -33,10 +33,10 @@ func AddUser(u *User) error {
 	log.Println("Will add user")
 	usersCollection, ctx := db.GetMongoCollectionWithContext(usersCollection)
 
-	duplicateUsers, err := usersCollection.Count(ctx, bson.M{"name": u.Name, "number": u.PhoneNumber, "email": u.EmailAddress})
+	duplicateUsers, err := usersCollection.Count(ctx, bson.M{"email": u.EmailAddress})
 
 	if duplicateUsers > 0 {
-		return errors.New("user already exists")
+		return errors.New("user with the given email address already exists")
 	}
 
 	count, err := usersCollection.CountDocuments(ctx, bson.M{})
