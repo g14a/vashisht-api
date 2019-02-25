@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"strconv"
 
+	"gitlab.com/gowtham-munukutla/vashisht-api/mailer"
+
 	"github.com/gorilla/mux"
 	uuid "github.com/satori/go.uuid"
 	"gitlab.com/gowtham-munukutla/vashisht-api/models"
