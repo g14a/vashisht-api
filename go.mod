@@ -1,6 +1,7 @@
 module gitlab.com/gowtham-munukutla/vashisht-api
 
 require (
+	github.com/badoux/checkmail v0.0.0-20181210160741-9661bd69e9ad
 	github.com/globalsign/mgo v0.0.0-20181015135952-eeefdecb41b8
 	github.com/go-stack/stack v1.8.0 // indirect
 	github.com/golang/snappy v0.0.0-20180518054509-2e65f85255db // indirect

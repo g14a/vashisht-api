@@ -4,6 +4,7 @@ mongo:
     users: users
     events: events
     registrations: eventsreg
+    apsarausers: apsarausers
 
 mail:
   smtp:
