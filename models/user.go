@@ -6,7 +6,6 @@ import (
 
 	"gitlab.com/gowtham-munukutla/vashisht-api/idgen"
 
-	"github.com/badoux/checkmail"
 	"github.com/mongodb/mongo-go-driver/bson"
 	"gitlab.com/gowtham-munukutla/vashisht-api/config"
 	"gitlab.com/gowtham-munukutla/vashisht-api/db"
@@ -30,28 +29,6 @@ var (
 	usersMutex      = &sync.Mutex{}
 )
 
-// VerifyUser checks if the student is from IIIT Kancheepuram
-func VerifyUser(u *User) error {
-	err := checkmail.ValidateFormat(u.EmailAddress)
-
-	if err != nil {
-		return err
-	}
-
-	err = checkmail.ValidateFormat(u.EmailAddress)
-	if err != nil {
-		return err
-	}
-
-	err = checkmail.ValidateHost(u.EmailAddress)
-
-	if smtpErr, ok := err.(checkmail.SmtpError); ok && err != nil {
-		return errors.New(smtpErr.Code())
-	}
-
-	return nil
-}
-
 // AddUser adds a new user after registration into the db
 func AddUser(u *User) error {
 	usersCollection, ctx := db.GetMongoCollectionWithContext(usersCollection)
@@ -66,9 +43,6 @@ func AddUser(u *User) error {
 	eventsMutex.Lock()
 	count = count + 1
 	u.UserID = int(count)
-	if VerifyUser(u) != nil {
-		return errors.New("Invalid email")
-	}
 	u.SamID = idgen.GenerateSamID(u.UserID)
 	eventsMutex.Unlock()
 	_, err = usersCollection.InsertOne(ctx, u)

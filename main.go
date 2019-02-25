@@ -18,7 +18,7 @@ func main() {
 	routes.InitRoutes(r)
 
 	headers := handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "Authorization"})
-	methods := handlers.AllowedMethods([]string{"GET", "POST", "PUT", "DELETE"})
+	methods := handlers.AllowedMethods([]string{"POST", "PUT", "DELETE"})
 	origins := handlers.AllowedOrigins([]string{"*"})
 
 	if os.Getenv("PORT") == "" {
