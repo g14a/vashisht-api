@@ -7,7 +7,7 @@ import (
 // GenerateSamID generates a SAMID for a given userID from the db
 func GenerateSamID(id int) string {
 	// prefix to be appended in the beginning
-	prefix := "SAM19"
+	prefix := "VAS19"
 
 	zeros := ""
 
@@ -31,7 +31,3 @@ func GenerateSamID(id int) string {
 
 	return finalID
 }
-
-// func main() {
-// 	fmt.Println(GenerateSamID(100))
-// }

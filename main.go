@@ -22,7 +22,7 @@ func main() {
 	origins := handlers.AllowedOrigins([]string{"*"})
 
 	if os.Getenv("PORT") == "" {
-		if err := http.ListenAndServe(":8000", handlers.CORS(headers, methods, origins)(r)); err != nil {
+		if err := http.ListenAndServe(":5000", handlers.CORS(headers, methods, origins)(r)); err != nil {
 			log.Fatal(err)
 		}
 	} else {

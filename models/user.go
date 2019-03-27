@@ -33,6 +33,22 @@ var (
 func AddUser(u *User) error {
 	usersCollection, ctx := db.GetMongoCollectionWithContext(usersCollection)
 
+	if len(u.FirstName) > 15 {
+		u.FirstName = u.FirstName[0:15]
+	}
+
+	if len(u.LastName) > 15 {
+		u.LastName = u.LastName[0:15]
+	}
+
+	if len(u.EmailAddress) > 30 {
+		return errors.New("address too lengthy")
+	}
+
+	if len(u.CollegeName) > 30 {
+		u.CollegeName = u.CollegeName[0:29]
+	}
+
 	duplicateUsers, err := usersCollection.Count(ctx, bson.M{"email": u.EmailAddress})
 
 	if duplicateUsers > 0 {
